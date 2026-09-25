@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "redbench"
+version = "0.1.0"
+description = "A pluggable framework for automated LLM red-teaming."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[project.scripts]
+redbench = "redbench.cli:main"
+
+# This is the plugin architecture: any pip-installed package can register
+# itself here to be auto-discovered by PluginRegistry.load_entry_points(),
+# without touching redbench's own code.
+[project.entry-points."redbench.plugins"]
+redbench = "redbench.plugins.redbench_plugin.plugin:RedBenchPlugin"
+
+[tool.setuptools.packages.find]
+include = ["redbench*"]
