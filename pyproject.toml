@@ -9,6 +9,7 @@ description = "A pluggable framework for automated LLM red-teaming."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+dependencies = ["pyyaml>=6.0"]
 
 [project.scripts]
 redbench = "redbench.cli:main"

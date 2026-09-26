@@ -69,6 +69,59 @@ implementation, including a placeholder (heuristic, refusal-keyword-based)
 judge — swap it for a real judge (classifier or LLM-as-judge) before using
 this for anything beyond pipeline testing.
 
+## Running probes through Promptfoo
+
+RedBench's own `RedTeamRunner` is a minimal engine meant for quick local
+checks. For real evaluations, RedBench plugins can instead be executed by
+[Promptfoo](https://www.promptfoo.dev/), reusing its mature attack
+strategies (jailbreak transforms, multi-turn escalation, etc.) and grading
+instead of RedBench's placeholder heuristic judge.
+
+RedBench stays the source of truth for *what* gets tested — the
+`generate_prompts()` of a plugin — while Promptfoo becomes the engine that
+runs and grades it.
+
+```
+RedBenchPlugin.generate_prompts()
+        │
+        ▼
+promptfoo/generate_config.py   →  promptfooconfig.yaml (redteam.plugins: intent)
+        │
+        ▼
+npx promptfoo@latest redteam run -c promptfooconfig.yaml
+        │
+        ▼
+promptfoo/provider.py  →  your target_fn (module.path:function_name)
+```
+
+Steps:
+
+```bash
+# 1. Install Node + Promptfoo (one-time)
+npx promptfoo@latest --version
+
+# 2. (Re)generate promptfooconfig.yaml from a RedBench plugin's probes
+pip install -e .
+python promptfoo/generate_config.py --plugin redbench
+
+# 3. Point the provider at whatever target you want attacked.
+#    Same "module.path:function_name" convention as `redbench run --target`.
+export PROMPTFOO_TARGET="examples.dummy_target:vulnerable_target"
+
+# 4. Run the red team
+npx promptfoo@latest redteam run -c promptfooconfig.yaml
+```
+
+To test a different target, change `PROMPTFOO_TARGET` (or wire it to a real
+model/agent — see `examples/dummy_target.py` for the expected function
+signature: takes a prompt string, returns a response string).
+
+To change *what* gets tested, edit the seed prompts in
+`redbench/plugins/redbench_plugin/probes/seed_prompts.py` (or point
+`--plugin` at a different RedBench plugin) and re-run
+`generate_config.py` — never hand-edit the generated `intent` list in
+`promptfooconfig.yaml` directly, since it's overwritten on each run.
+
 ## Project layout
 
 ```

@@ -11,3 +11,6 @@ venv/
 dist/
 build/
 *.log
+node_modules/
+.promptfoo/
+output/
